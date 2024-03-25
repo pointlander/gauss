@@ -53,4 +53,6 @@ func main() {
 	inv := MatrixInverse(multi.A, &rng)
 	fmt.Println(inv)
 	fmt.Println(multi.A.MulT(inv))
+	dist := inv.MulT(points.Sub(multi.U))
+	fmt.Println(dist)
 }
