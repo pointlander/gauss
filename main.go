@@ -65,7 +65,7 @@ func main() {
 		return rows[i].Score < rows[i].Score
 	})
 	in := float32(0.0)
-	for i := 0; i < 4; i++ {
+	for i := 0; i < len(multi.E.Data); i++ {
 		x := multi.E.Data[i]
 		if x < 0 {
 			x = -x
@@ -90,7 +90,7 @@ func main() {
 		}
 		aa := NewMultiFromData(a.T())
 		aaa := float32(0.0)
-		for i := 0; i < 4; i++ {
+		for i := 0; i < len(aa.E.Data); i++ {
 			x := aa.E.Data[i]
 			if x < 0 {
 				x = -x
@@ -99,7 +99,7 @@ func main() {
 		}
 		bb := NewMultiFromData(b.T())
 		bbb := float32(0.0)
-		for i := 0; i < 4; i++ {
+		for i := 0; i < len(bb.E.Data); i++ {
 			x := bb.E.Data[i]
 			if x < 0 {
 				x = -x
