@@ -47,10 +47,22 @@ func main() {
 			points.Data = append(points.Data, float32(value))
 		}
 	}
+	type Row struct {
+		Score    float64
+		Measures []float64
+		Label    string
+	}
+	rows := make([]Row, len(datum.Fisher))
+	entropy := SelfEntropy64(points, points, points)
+	for i, e := range entropy {
+		rows[i].Score = e
+		rows[i].Measures = datum.Fisher[i].Measures
+		rows[i].Label = datum.Fisher[i].Label
+	}
 	multi := NewMultiFromData(points.T())
 	fmt.Println(multi.E)
-	sort.Slice(datum.Fisher, func(i, j int) bool {
-		return datum.Fisher[i].Measures[0] < datum.Fisher[j].Measures[0]
+	sort.Slice(rows, func(i, j int) bool {
+		return rows[i].Score < rows[i].Score
 	})
 	in := float32(0.0)
 	for i := 0; i < 4; i++ {
@@ -65,13 +77,13 @@ func main() {
 		a := NewMatrix(4, i+1)
 		b := NewMatrix(4, len(datum.Fisher)-(i+1))
 		for j := 0; j < i+1; j++ {
-			row := datum.Fisher[j]
+			row := rows[j]
 			for _, value := range row.Measures {
 				a.Data = append(a.Data, float32(value))
 			}
 		}
 		for j := i + 1; j < len(datum.Fisher); j++ {
-			row := datum.Fisher[j]
+			row := rows[j]
 			for _, value := range row.Measures {
 				b.Data = append(b.Data, float32(value))
 			}
@@ -100,8 +112,8 @@ func main() {
 		}
 	}
 	fmt.Println(index)
-	for i := 0; i < index; i++ {
-		fmt.Println(datum.Fisher[i].Label)
+	for i := 0; i <= index; i++ {
+		fmt.Println(rows[i].Label)
 	}
 	/*multi.LearnA(&rng, nil)
 	fmt.Println(multi.A)
