@@ -41,79 +41,93 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	points := NewMatrix(4, 150)
-	for _, row := range datum.Fisher {
-		for _, value := range row.Measures {
-			points.Data = append(points.Data, float32(value))
-		}
-	}
 	type Row struct {
 		Score    float64
 		Measures []float64
 		Label    string
 	}
 	rows := make([]Row, len(datum.Fisher))
-	entropy := SelfEntropy64(points, points, points)
-	for i, e := range entropy {
-		rows[i].Score = e
+	for i := range rows {
 		rows[i].Measures = datum.Fisher[i].Measures
 		rows[i].Label = datum.Fisher[i].Label
 	}
-	multi := NewMultiFromData(points.T())
-	fmt.Println(multi.E)
-	sort.Slice(rows, func(i, j int) bool {
-		return rows[i].Score < rows[i].Score
-	})
-	in := float32(0.0)
-	for i := 0; i < len(multi.E.Data); i++ {
-		x := multi.E.Data[i]
-		if x < 0 {
-			x = -x
-		}
-		in += x
-	}
-	max, index := float32(0.0), 0
-	for i := 0; i < len(datum.Fisher)-1; i++ {
-		a := NewMatrix(4, i+1)
-		b := NewMatrix(4, len(datum.Fisher)-(i+1))
-		for j := 0; j < i+1; j++ {
-			row := rows[j]
+	split := func(rows []Row) int {
+		points := NewMatrix(4, len(rows))
+		for _, row := range rows {
 			for _, value := range row.Measures {
-				a.Data = append(a.Data, float32(value))
+				points.Data = append(points.Data, float32(value))
 			}
 		}
-		for j := i + 1; j < len(datum.Fisher); j++ {
-			row := rows[j]
-			for _, value := range row.Measures {
-				b.Data = append(b.Data, float32(value))
-			}
+		entropy := SelfEntropy64(points, points, points)
+		for i, e := range entropy {
+			rows[i].Score = e
 		}
-		aa := NewMultiFromData(a.T())
-		aaa := float32(0.0)
-		for i := 0; i < len(aa.E.Data); i++ {
-			x := aa.E.Data[i]
+		multi := NewMultiFromData(points.T())
+		sort.Slice(rows, func(i, j int) bool {
+			return rows[i].Score < rows[j].Score
+		})
+		in := float32(0.0)
+		for i := 0; i < len(multi.E.Data); i++ {
+			x := multi.E.Data[i]
 			if x < 0 {
 				x = -x
 			}
-			aaa += x
+			in += x
 		}
-		bb := NewMultiFromData(b.T())
-		bbb := float32(0.0)
-		for i := 0; i < len(bb.E.Data); i++ {
-			x := bb.E.Data[i]
-			if x < 0 {
-				x = -x
+		max, index := float32(0.0), 0
+		for i := 0; i < len(rows)-1; i++ {
+			a := NewMatrix(4, i+1)
+			b := NewMatrix(4, len(rows)-(i+1))
+			for j := 0; j < i+1; j++ {
+				row := rows[j]
+				for _, value := range row.Measures {
+					a.Data = append(a.Data, float32(value))
+				}
 			}
-			bbb += x
+			for j := i + 1; j < len(rows); j++ {
+				row := rows[j]
+				for _, value := range row.Measures {
+					b.Data = append(b.Data, float32(value))
+				}
+			}
+			aa := NewMultiFromData(a.T())
+			aaa := float32(0.0)
+			for i := 0; i < len(aa.E.Data); i++ {
+				x := aa.E.Data[i]
+				if x < 0 {
+					x = -x
+				}
+				aaa += x
+			}
+			bb := NewMultiFromData(b.T())
+			bbb := float32(0.0)
+			for i := 0; i < len(bb.E.Data); i++ {
+				x := bb.E.Data[i]
+				if x < 0 {
+					x = -x
+				}
+				bbb += x
+			}
+			if gap := in - (aaa + bbb); gap > max {
+				max, index = gap, i
+			}
 		}
-		if gap := in - (aaa + bbb); gap > max {
-			fmt.Println(i, in, aaa, bbb, gap)
-			max, index = gap, i
-		}
+		return index
 	}
+	index := split(rows)
 	fmt.Println(index)
 	for i := 0; i <= index; i++ {
-		fmt.Println(rows[i].Label)
+		fmt.Println(rows[i].Label, rows[i].Score, rows[i].Measures)
+	}
+	rows = rows[index+1:]
+	index = split(rows)
+	fmt.Println(index)
+	for i := 0; i <= index; i++ {
+		fmt.Println(rows[i].Label, rows[i].Score, rows[i].Measures)
+	}
+	fmt.Println(index)
+	for i := index + 1; i < len(rows); i++ {
+		fmt.Println(rows[i].Label, rows[i].Score, rows[i].Measures)
 	}
 	/*multi.LearnA(&rng, nil)
 	fmt.Println(multi.A)
