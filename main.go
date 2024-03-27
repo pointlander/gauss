@@ -50,11 +50,14 @@ func main() {
 		return
 	}
 
-	primes := []uint64{2, 3}
+	primes := []uint64{1, 2, 3}
 search:
 	for i := uint64(4); i < 258; i++ {
 		max := uint64(math.Sqrt(float64(i)) + .5)
 		for _, p := range primes {
+			if p == 1 {
+				continue
+			}
 			if p > max {
 				break
 			}
@@ -77,11 +80,14 @@ search:
 		integers[i].Factors = make([]float32, len(primes))
 		max := uint64(math.Sqrt(float64(i)) + .5)
 		for j, p := range primes {
-			if p > max || ii == 1 {
+			if p > max {
 				break
 			}
 			for ii%p == 0 {
 				integers[i].Factors[j]++
+				if p == 1 {
+					break
+				}
 				ii /= p
 			}
 		}
