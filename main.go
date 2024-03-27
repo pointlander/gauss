@@ -5,11 +5,17 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"sort"
 
 	"github.com/pointlander/datum/iris"
 	. "github.com/pointlander/matrix"
+)
+
+var (
+	// FlagMark1 mark 1 model
+	FlagMark1 = flag.Bool("mark1", false, "mark 1 model")
 )
 
 func MatrixInverse(m Matrix, rng *Rand) (ai Matrix) {
@@ -36,6 +42,16 @@ func MatrixInverse(m Matrix, rng *Rand) (ai Matrix) {
 }
 
 func main() {
+	flag.Parse()
+
+	if *FlagMark1 {
+		Mark1()
+		return
+	}
+}
+
+// Mark1 mark 1 model
+func Mark1() {
 	//rng := Rand(1)
 	datum, err := iris.Load()
 	if err != nil {
