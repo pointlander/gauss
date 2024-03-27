@@ -7,6 +7,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"math"
 	"sort"
 
 	"github.com/pointlander/datum/iris"
@@ -47,6 +48,57 @@ func main() {
 	if *FlagMark1 {
 		Mark1()
 		return
+	}
+
+	primes := []uint64{2, 3}
+search:
+	for i := uint64(4); i < 258; i++ {
+		max := uint64(math.Sqrt(float64(i)) + .5)
+		for _, p := range primes {
+			if p > max {
+				break
+			}
+			if i%p == 0 {
+				continue search
+			}
+		}
+		primes = append(primes, i)
+	}
+	fmt.Println(primes)
+	type Integer struct {
+		Integer uint64
+		Factors []float32
+		Entropy float32
+	}
+	integers := make([]Integer, 258)
+	for i := range integers {
+		ii := uint64(i)
+		integers[i].Integer = ii
+		integers[i].Factors = make([]float32, len(primes))
+		max := uint64(math.Sqrt(float64(i)) + .5)
+		for j, p := range primes {
+			if p > max || ii == 1 {
+				break
+			}
+			for ii%p == 0 {
+				integers[i].Factors[j]++
+				ii /= p
+			}
+		}
+	}
+	vectors := NewMatrix(len(primes), len(integers))
+	for _, integer := range integers {
+		vectors.Data = append(vectors.Data, integer.Factors...)
+	}
+	entropy := SelfEntropy(vectors, vectors, vectors)
+	for i := range integers {
+		integers[i].Entropy = entropy[i]
+	}
+	sort.Slice(integers, func(i, j int) bool {
+		return integers[i].Entropy < integers[j].Entropy
+	})
+	for _, integer := range integers {
+		fmt.Println(integer.Factors, integer.Integer, integer.Entropy)
 	}
 }
 
