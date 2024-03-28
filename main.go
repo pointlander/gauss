@@ -20,6 +20,8 @@ var (
 	FlagMark1 = flag.Bool("mark1", false, "mark 1 model")
 	// FlagMark2 mark 2 model
 	FlagMark2 = flag.Bool("mark2", false, "mark 2 model")
+	// FlagMark3 mark 3 model
+	FlagMark3 = flag.Bool("mark3", false, "mark 3 model")
 )
 
 func MatrixInverse(m Matrix, rng *Rand) (ai Matrix) {
@@ -54,8 +56,14 @@ func main() {
 	} else if *FlagMark2 {
 		Mark2()
 		return
+	} else if *FlagMark3 {
+		Mark3()
+		return
 	}
+}
 
+// Mark3 mark 3 model
+func Mark3() {
 	plain := `You will rejoice to hear that no disaster has accompanied the
 	commencement of an enterprise which you have regarded with such evil
 	forebodings. I arrived here yesterday, and my first task is to assure
