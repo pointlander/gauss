@@ -62,7 +62,7 @@ func main() {
 	my dear sister of my welfare and increasing confidence in the success
 	of my undertaking.`
 	lt, gt := 0, 0
-	for seed := 1; seed < 1024; seed++ {
+	for seed := 1; seed < 8*1024; seed++ {
 		rng := rand.New(rand.NewSource(int64(seed)))
 		cipher := []byte{}
 		key := []byte{}
@@ -70,14 +70,15 @@ func main() {
 			key = append(key, uint8(rng.Uint32()))
 			cipher = append(cipher, uint8(s)^key[i])
 		}
-		input := NewMatrix(8, len(cipher))
-		control := NewMatrix(8, len(cipher))
+		input := NewMatrix(256, len(cipher))
+		control := NewMatrix(256, len(cipher))
 		for i, s := range cipher {
 			ss := key[i]
-			for i := 0; i < 8; i++ {
-				input.Data = append(input.Data, float32((s>>i)&1))
-				control.Data = append(control.Data, float32((ss>>i)&1))
-			}
+			a, b := make([]float32, 256), make([]float32, 256)
+			a[s] = 1
+			b[ss] = 1
+			input.Data = append(input.Data, a...)
+			control.Data = append(control.Data, b...)
 		}
 		entropy := SelfEntropy(input, input, input)
 		avg := float32(0)
