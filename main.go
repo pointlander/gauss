@@ -17,6 +17,8 @@ import (
 var (
 	// FlagMark1 mark 1 model
 	FlagMark1 = flag.Bool("mark1", false, "mark 1 model")
+	// FlagMark2 mark 2 model
+	FlagMark2 = flag.Bool("mark2", false, "mark 2 model")
 )
 
 func MatrixInverse(m Matrix, rng *Rand) (ai Matrix) {
@@ -48,8 +50,14 @@ func main() {
 	if *FlagMark1 {
 		Mark1()
 		return
+	} else if *FlagMark2 {
+		Mark2()
+		return
 	}
+}
 
+// Mark2 mark 2 model
+func Mark2() {
 	primes := []uint64{1, 2, 3}
 search:
 	for i := uint64(4); i < 258; i++ {
