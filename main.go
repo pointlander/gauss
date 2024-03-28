@@ -8,6 +8,7 @@ import (
 	"flag"
 	"fmt"
 	"math"
+	"math/rand"
 	"sort"
 
 	"github.com/pointlander/datum/iris"
@@ -54,6 +55,50 @@ func main() {
 		Mark2()
 		return
 	}
+
+	plain := `You will rejoice to hear that no disaster has accompanied the
+	commencement of an enterprise which you have regarded with such evil
+	forebodings. I arrived here yesterday, and my first task is to assure
+	my dear sister of my welfare and increasing confidence in the success
+	of my undertaking.`
+	lt, gt := 0, 0
+	for seed := 1; seed < 1024; seed++ {
+		rng := rand.New(rand.NewSource(int64(seed)))
+		cipher := []byte{}
+		key := []byte{}
+		for i, s := range plain {
+			key = append(key, uint8(rng.Uint32()))
+			cipher = append(cipher, uint8(s)^key[i])
+		}
+		input := NewMatrix(8, len(cipher))
+		control := NewMatrix(8, len(cipher))
+		for i, s := range cipher {
+			ss := key[i]
+			for i := 0; i < 8; i++ {
+				input.Data = append(input.Data, float32((s>>i)&1))
+				control.Data = append(control.Data, float32((ss>>i)&1))
+			}
+		}
+		entropy := SelfEntropy(input, input, input)
+		avg := float32(0)
+		for _, e := range entropy {
+			avg += e
+		}
+		avg /= float32(len(cipher))
+		entropy = SelfEntropy(control, control, control)
+		avg2 := float32(0)
+		for _, e := range entropy {
+			avg2 += e
+		}
+		avg2 /= float32(len(cipher))
+		fmt.Println(avg, avg2)
+		if avg > avg2 {
+			gt++
+		} else {
+			lt++
+		}
+	}
+	fmt.Println(gt, lt)
 }
 
 // Mark2 mark 2 model
