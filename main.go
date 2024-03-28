@@ -75,7 +75,7 @@ func main() {
 	}
 
 	rng := Rand(1)
-	optimizer := NewOptimizer(&rng, 8, .1, 1, func(samples []Sample, x ...Matrix) {
+	optimizer := NewOptimizer(&rng, 16, .1, 1, func(samples []Sample, x ...Matrix) {
 		for index := range samples {
 			x := samples[index].Vars[0][0].Sample()
 			y := samples[index].Vars[0][1].Sample()
@@ -137,7 +137,11 @@ func main() {
 			}
 			plain = append(plain, s^cipher[r])
 		}
-		fmt.Println(string(plain))
+		p := make([]rune, len(plain))
+		for i, value := range plain {
+			p[i] = rune(value)
+		}
+		fmt.Println(string(p))
 	}
 }
 
