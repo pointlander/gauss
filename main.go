@@ -122,6 +122,22 @@ func main() {
 		}
 		fmt.Println(s.Cost)
 		last = s.Cost
+		x := s.Vars[0][0].Sample()
+		y := s.Vars[0][1].Sample()
+		z := s.Vars[0][2].Sample()
+		sample := x.Add(y.H(z))
+		plain := []byte{}
+		for r := 0; r < len(cipher); r++ {
+			s := byte(0)
+			for c := 0; c < 8; c++ {
+				s <<= 1
+				if sample.Data[r*8+c] > 0 {
+					s |= 1
+				}
+			}
+			plain = append(plain, s^cipher[r])
+		}
+		fmt.Println(string(plain))
 	}
 }
 
