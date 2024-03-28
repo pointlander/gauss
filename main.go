@@ -60,6 +60,69 @@ func main() {
 		Mark3()
 		return
 	}
+
+	plain := `You will rejoice to hear that no disaster has accompanied the
+	commencement of an enterprise which you have regarded with such evil
+	forebodings. I arrived here yesterday, and my first task is to assure
+	my dear sister of my welfare and increasing confidence in the success
+	of my undertaking.`
+	r := rand.New(rand.NewSource(int64(1)))
+	cipher := []byte{}
+	key := []byte{}
+	for i, s := range plain {
+		key = append(key, uint8(r.Uint32()))
+		cipher = append(cipher, uint8(s)^key[i])
+	}
+
+	rng := Rand(1)
+	optimizer := NewOptimizer(&rng, 8, .1, 1, func(samples []Sample, x ...Matrix) {
+		for index := range samples {
+			x := samples[index].Vars[0][0].Sample()
+			y := samples[index].Vars[0][1].Sample()
+			z := samples[index].Vars[0][2].Sample()
+			sample := x.Add(y.H(z))
+			key := []byte{}
+			plain := []byte{}
+			for r := 0; r < len(cipher); r++ {
+				s := byte(0)
+				for c := 0; c < 8; c++ {
+					s <<= 1
+					if sample.Data[r*8+c] > 0 {
+						s |= 1
+					}
+				}
+				plain = append(plain, s^cipher[r])
+				key = append(key, s)
+			}
+			input := NewMatrix(256, len(cipher))
+			control := NewMatrix(256, len(cipher))
+			for i, s := range plain {
+				ss := key[i]
+				a, b := make([]float32, 256), make([]float32, 256)
+				a[s] = 1
+				b[ss] = 1
+				input.Data = append(input.Data, a...)
+				control.Data = append(control.Data, b...)
+			}
+			e1 := SelfEntropy(input, input, input)
+			e2 := SelfEntropy(control, control, control)
+			cost := 0.0
+			for i, e := range e1 {
+				cost += float64(e / e2[i])
+			}
+			samples[index].Cost = cost
+		}
+	}, NewCoord(8, len(cipher)))
+	last := -1.0
+	dx := 1e-9
+	for {
+		s := optimizer.Iterate()
+		if last > 0 && math.Abs(last-s.Cost) < dx {
+			break
+		}
+		fmt.Println(s.Cost)
+		last = s.Cost
+	}
 }
 
 // Mark3 mark 3 model
